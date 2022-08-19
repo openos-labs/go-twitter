@@ -57,9 +57,15 @@ type UserTimelineMeta struct {
 }
 
 type tweetraw struct {
-	Tweet    *TweetObj         `json:"data"`
-	Includes *TweetRawIncludes `json:"includes"`
-	Errors   []*ErrorObj       `json:"errors"`
+	Tweet         *TweetObj         `json:"data"`
+	Includes      *TweetRawIncludes `json:"includes"`
+	Errors        []*ErrorObj       `json:"errors"`
+	MatchingRules []MatchingRule    `json:"matching_rules"`
+}
+
+type MatchingRule struct {
+	Id  string `json:"id"`
+	Tag string `json:"tag"`
 }
 
 // TweetRaw is the raw response from the tweet lookup endpoint
@@ -68,6 +74,8 @@ type TweetRaw struct {
 	Includes     *TweetRawIncludes `json:"includes,omitempty"`
 	Errors       []*ErrorObj       `json:"errors,omitempty"`
 	dictionaries map[string]*TweetDictionary
+	// matching_rules
+	MatchingRules []MatchingRule `json:"matching_rules"`
 }
 
 // TweetDictionaries create a map of tweet dictionaries from the raw tweet response

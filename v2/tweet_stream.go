@@ -255,6 +255,7 @@ func (ts *TweetStream) handle(stream io.ReadCloser) {
 			raw.Tweets[0] = single.Tweet
 			raw.Includes = single.Includes
 			raw.Errors = single.Errors
+			raw.MatchingRules = single.MatchingRules
 
 			tweetMsg := &TweetMessage{
 				Raw: raw,
