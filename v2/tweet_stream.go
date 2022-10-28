@@ -172,7 +172,7 @@ func StartTweetStream(stream io.ReadCloser) *TweetStream {
 		tweets:        make(chan *TweetMessage, 10),
 		system:        make(chan map[SystemMessageType]SystemMessage, 10),
 		close:         make(chan bool),
-		err:           make(chan error),
+		err:           make(chan error, 10),
 		mutex:         sync.RWMutex{},
 		alive:         true,
 		needReConnect: false,
@@ -224,8 +224,9 @@ func (ts *TweetStream) handle(stream io.ReadCloser) {
 				go ts.Close()
 				if err := stream.Close(); err != nil {
 					ts.err <- err
-					ts.needReConnect = true
 				}
+				ts.err <- scanner.Err()
+				ts.needReConnect = true
 			}
 			time.Sleep(time.Millisecond * 200)
 			continue
