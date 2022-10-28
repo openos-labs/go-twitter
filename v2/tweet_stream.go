@@ -221,7 +221,7 @@ func (ts *TweetStream) handle(stream io.ReadCloser) {
 
 		if !scanner.Scan() {
 			if scanner.Err() != nil {
-				ts.Close()
+				go ts.Close()
 				if err := stream.Close(); err != nil {
 					ts.err <- err
 					ts.needReConnect = true
