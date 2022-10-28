@@ -156,29 +156,35 @@ type SystemMessage struct {
 
 // TweetStream is the stream handler
 type TweetStream struct {
-	tweets    chan *TweetMessage
-	system    chan map[SystemMessageType]SystemMessage
-	close     chan bool
-	err       chan error
-	alive     bool
-	mutex     sync.RWMutex
-	RateLimit *RateLimit
+	tweets        chan *TweetMessage
+	system        chan map[SystemMessageType]SystemMessage
+	close         chan bool
+	needReConnect bool
+	err           chan error
+	alive         bool
+	mutex         sync.RWMutex
+	RateLimit     *RateLimit
 }
 
 // StartTweetStream will start the tweet streaming
 func StartTweetStream(stream io.ReadCloser) *TweetStream {
 	ts := &TweetStream{
-		tweets: make(chan *TweetMessage, 10),
-		system: make(chan map[SystemMessageType]SystemMessage, 10),
-		close:  make(chan bool),
-		err:    make(chan error),
-		mutex:  sync.RWMutex{},
-		alive:  true,
+		tweets:        make(chan *TweetMessage, 10),
+		system:        make(chan map[SystemMessageType]SystemMessage, 10),
+		close:         make(chan bool),
+		err:           make(chan error),
+		mutex:         sync.RWMutex{},
+		alive:         true,
+		needReConnect: false,
 	}
 
 	go ts.handle(stream)
 
 	return ts
+}
+
+func (ts *TweetStream) NeedReConnect() bool {
+	return ts.needReConnect
 }
 
 func (ts *TweetStream) heartbeat(beat bool) {
@@ -214,6 +220,14 @@ func (ts *TweetStream) handle(stream io.ReadCloser) {
 		}
 
 		if !scanner.Scan() {
+			if scanner.Err() != nil {
+				ts.Close()
+				if err := stream.Close(); err != nil {
+					ts.err <- err
+					ts.needReConnect = true
+				}
+			}
+			time.Sleep(time.Millisecond * 200)
 			continue
 		}
 
