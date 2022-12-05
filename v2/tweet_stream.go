@@ -261,6 +261,7 @@ func (ts *TweetStream) handle(stream io.ReadCloser) {
 				}
 				select {
 				case ts.err <- sErr:
+					ts.needReConnect = true
 				default:
 				}
 				continue
@@ -292,6 +293,7 @@ func (ts *TweetStream) handle(stream io.ReadCloser) {
 			}
 			select {
 			case ts.err <- sErr:
+				ts.needReConnect = true
 			default:
 			}
 			continue
