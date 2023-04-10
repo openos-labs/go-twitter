@@ -4276,3 +4276,112 @@ func (c *Client) RemoveTweetBookmark(ctx context.Context, userID, tweetID string
 
 	return respBody, nil
 }
+
+// UserDirectMessageLookup Direct Message Lookup
+func (c *Client) UserDirectMessageLookup(ctx context.Context) (*UserDirectMessageLookupResponse, error) {
+
+	ep := directMessageLookupEndpoint.url(c.Host)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ep, nil)
+	if err != nil {
+		return nil, fmt.Errorf("user direct message request: %w", err)
+	}
+	req.Header.Add("Accept", "application/json")
+	c.Authorizer.Add(req)
+
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("user direct message response: %w", err)
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+
+	rl := rateFromHeader(resp.Header)
+
+	if resp.StatusCode != http.StatusOK {
+		e := &ErrorResponse{}
+		if err := decoder.Decode(e); err != nil {
+			return nil, &HTTPError{
+				Status:     resp.Status,
+				StatusCode: resp.StatusCode,
+				URL:        resp.Request.URL.String(),
+				RateLimit:  rl,
+			}
+		}
+		e.StatusCode = resp.StatusCode
+		e.RateLimit = rl
+		return nil, e
+	}
+
+	respBody := &UserDirectMessageLookupResponse{}
+
+	if err := decoder.Decode(respBody); err != nil {
+		return nil, &ResponseDecodeError{
+			Name:      "user direct message lookup",
+			Err:       err,
+			RateLimit: rl,
+		}
+	}
+
+	respBody.RateLimit = rl
+
+	return respBody, nil
+}
+
+// UserDirectMessageCreate Direct Message Create
+func (c *Client) UserDirectMessageCreate(ctx context.Context, ParticipantId string, opts UserDirectMessageCreateOpt) (*UserDirectMessageCreateResponse, error) {
+
+	ep := directMessageCreateEndpoint.urlID(c.Host, ParticipantId)
+
+	enc, err := json.Marshal(opts)
+	if err != nil {
+		return nil, fmt.Errorf("create compliance batch job request encode: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ep, bytes.NewReader(enc))
+	if err != nil {
+		return nil, fmt.Errorf("user direct message request: %w", err)
+	}
+	req.Header.Add("Accept", "application/json")
+	c.Authorizer.Add(req)
+
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("user direct message response: %w", err)
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+
+	rl := rateFromHeader(resp.Header)
+
+	if resp.StatusCode != http.StatusOK {
+		e := &ErrorResponse{}
+		if err := decoder.Decode(e); err != nil {
+			return nil, &HTTPError{
+				Status:     resp.Status,
+				StatusCode: resp.StatusCode,
+				URL:        resp.Request.URL.String(),
+				RateLimit:  rl,
+			}
+		}
+		e.StatusCode = resp.StatusCode
+		e.RateLimit = rl
+		return nil, e
+	}
+
+	respBody := &UserDirectMessageCreateResponse{}
+
+	if err := decoder.Decode(respBody); err != nil {
+		return nil, &ResponseDecodeError{
+			Name:      "user direct message create",
+			Err:       err,
+			RateLimit: rl,
+		}
+	}
+
+	respBody.RateLimit = rl
+
+	return respBody, nil
+}

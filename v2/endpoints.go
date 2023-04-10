@@ -54,6 +54,10 @@ const (
 	quoteTweetLookupEndpoint                      endpoint = "2/tweets/{id}/quote_tweets"
 	tweetBookmarksEndpoint                        endpoint = "2/users/{id}/bookmarks"
 
+	// DirectMessageLookupEndpoint Direct Messages Lookup
+	directMessageLookupEndpoint endpoint = "2/dm_events"
+	directMessageCreateEndpoint endpoint = "2/dm_conversations/with/{id}/messages"
+
 	idTag = "{id}"
 )
 
